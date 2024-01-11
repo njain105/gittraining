@@ -1,0 +1,53 @@
+pipeline {
+agent {
+docker {
+image 'maven:3.9.3-eclipse-temurin-17'
+args '-v $HOME/.m2:/root/.m2'
+}
+}
+parameters {
+choice(
+name: 'ENVIRONMENT',
+choices: ['dev', 'qa', 'prod'],
+description: 'Select the deployment environment'
+)
+}
+stages {
+stage('SCM code') {
+steps {
+git 'https://github.com/hellokaton/java11-examples.git'
+}
+}
+stage('Build') {
+steps {
+sh 'mvn clean package'
+}
+}
+stage('Test') {
+steps {
+sh 'mvn test'
+}
+}
+stage('Deploy') {
+when {
+expression { params.ENVIRONMENT == 'prod' }
+}
+steps {
+// Add steps to deploy the application for 'prod'
+echo 'Deploying to production...'
+}
+}
+}
+post {
+success {
+echo 'Pipeline succeeded!'
+
+// Add additional success steps if needed
+}
+failure {
+echo 'Pipeline failed!'
+
+// Add additional failure steps if needed
+}
+}
+}
