@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'param1', defaultValue: 'example-value', description: 'Parameter 1')
+        string(name: 'githubToken', defaultValue: '', description: 'GitHub Personal Access Token')
+    }
+    stages {
+        stage('HTTP Request') {
+            steps {
+                script {
+                    def response = httpRequest "http://httpbin.org/response-headers?param1=${param1}"
+                    writeFile file: 'response.txt', text: response.content
+                    println("Status: ${response.status}")
+                    println("Response: ${response.content}")
+                    println("Headers: ${response.headers}")
+                }
+            }
+        }
+        stage('Additional Stage') {
+            steps {
+                script {
+                    // Add your additional steps for this stage
+                    echo "This is the Additional Stage!"
+                }
+            }
+        }
+ 
+        stage('PUT Request to GitHub') {
+            steps {
+                script {
+                    def putResponse = httpRequest(
+                        acceptType: 'APPLICATION_JSON',
+                        contentType: 'APPLICATION_JSON',
+                        httpMode: 'PUT',
+                        requestBody: '{"param1": "${param1}", "action": "put"}',
+                        responseHandle: 'NONE',
+                        url: 'https://api.github.com/repos/amitopenwriteup/cicd',
+                        authentication: "Bearer ${githubToken}"
+                    )
+                    println("PUT Status: ${putResponse.status}")
+                    println("PUT Response: ${putResponse.content}")
+                }
+            }
+        }
+ 
+        stage('POST Request to GitHub') {
+            steps {
+                script {
+                    def postResponse = httpRequest(
+                        acceptType: 'APPLICATION_JSON',
+                        contentType: 'APPLICATION_JSON',
+                        httpMode: 'POST',
+                        requestBody: '{"param1": "${param1}", "action": "post"}',
+                        responseHandle: 'NONE',
+                        url: 'https://api.github.com/repos/amitopenwriteup/cicd/issues',
+                        authentication: "Bearer ${githubToken}"
+                    )
+                    println("POST Status: ${postResponse.status}")
+                    println("POST Response: ${postResponse.content}")
+                }
+            }
+        }
+        // Add more stages as needed
+    }
+}
