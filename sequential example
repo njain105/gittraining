@@ -3,7 +3,7 @@ pipeline {
     stages {
 stage(‘Stage1’) {
 steps {
-echo “Stage1 executing”
+echo 'Stage1 executing'
 sleep 10
 }
 }
